@@ -49,6 +49,56 @@ public class TripService {
                 .toList();
     }
 
+    public List<TripResponse> getMyTrips() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = authService.findByEmailOrThrow(email);
+        
+        return tripRepository.findByAuthorId(currentUser.getId())
+                .stream()
+                .sorted((t1, t2) -> t2.getCreatedAt().compareTo(t1.getCreatedAt())) // เรียงจากใหม่ไปเก่า
+                .map(this::toResponse)
+                .toList();
+    }
+
+    public TripResponse update(Long id, TripRequest request) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = authService.findByEmailOrThrow(email);
+        
+        Trip trip = tripRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Trip not found"));
+        
+        // ตรวจสอบว่าเป็นเจ้าของ trip หรือไม่
+        if (!trip.getAuthor().getId().equals(currentUser.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only update your own trips");
+        }
+        
+        // อัปเดตข้อมูล
+        trip.setTitle(request.getTitle());
+        trip.setDescription(request.getDescription());
+        trip.setPhotos(request.getPhotos());
+        trip.setTags(request.getTags());
+        trip.setLatitude(request.getLatitude());
+        trip.setLongitude(request.getLongitude());
+        
+        Trip saved = tripRepository.save(trip);
+        return toResponse(saved);
+    }
+    
+    public void delete(Long id) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = authService.findByEmailOrThrow(email);
+        
+        Trip trip = tripRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Trip not found"));
+        
+        // ตรวจสอบว่าเป็นเจ้าของ trip หรือไม่
+        if (!trip.getAuthor().getId().equals(currentUser.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only delete your own trips");
+        }
+        
+        tripRepository.delete(trip);
+    }
+
     public TripResponse create(TripRequest request) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User author = authService.findByEmailOrThrow(email); 

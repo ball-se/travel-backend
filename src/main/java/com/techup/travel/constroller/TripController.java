@@ -39,14 +39,14 @@ public class TripController {
         return tripService.getAll();
     }
 
-    // /** GET /api/trips/mine - ดึงทริปของผู้ใช้งาน */
-    // @GetMapping("/mine")
-    // public List<TripResponse> getMyTrips(@RequestHeader("Authorization") String header) {
-        
-    // }
+    /** GET /api/trips/mine - ดึงทริปของผู้ใช้งาน */
+    @GetMapping("/mine")
+    public List<TripResponse> getMyTrips() {
+        return tripService.getMyTrips();
+    }
 
     /** GET /api/trips/{id} - ดึงทริปรายการเดียว */
-    @GetMapping("/{id}")
+    @GetMapping("/{id:\\d+}")
     public TripResponse getTrip(@PathVariable Long id) {
         return tripService.getById(id);
     }
@@ -57,6 +57,20 @@ public class TripController {
         TripResponse created = tripService.create(request);
         URI location = URI.create("/api/trips/" + created.getId());
         return ResponseEntity.created(location).body(created);
+    }
+
+    /** PUT /api/trips/{id} - อัปเดตทริป */
+    @PutMapping("/{id:\\d+}")
+    public ResponseEntity<TripResponse> update(@PathVariable Long id, @RequestBody TripRequest request) {
+        TripResponse updated = tripService.update(id, request);
+        return ResponseEntity.ok(updated);
+    }
+
+    /** DELETE /api/trips/{id} - ลบทริป */
+    @DeleteMapping("/{id:\\d+}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        tripService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{id}/upload")

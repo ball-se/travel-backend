@@ -32,17 +32,18 @@ public class SecurityConfig {
         .csrf(csrf -> csrf.disable()) // ปิด CSRF สำหรับ API (ใช้ JWT แทน)
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/auth/**").permitAll() // ✅ login/register เปิดได้
-            .requestMatchers(HttpMethod.GET, "/api/trips", "/api/trips/search", "/api/trips/*")
-            .permitAll()
-            .requestMatchers(
-                "/api/auth/me",
-                "/api/trips/mine",
-                "/api/files/upload"
-            ).authenticated()  // API ที่ต้องมี JWT
+            // ✅ Public GET endpoints
+            .requestMatchers(HttpMethod.GET, "/api/trips").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/trips/search").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/trips/**").permitAll()  // ✅ GET ทุก path ภายใต้ /api/trips
+            // ✅ Protected endpoints
+            .requestMatchers("/api/auth/me").authenticated()
+            .requestMatchers("/api/trips/mine").authenticated()
+            .requestMatchers("/api/files/upload").authenticated()
             .requestMatchers(HttpMethod.POST, "/api/trips").authenticated()
-            .requestMatchers(HttpMethod.PUT, "/api/trips/*").authenticated()
-            .requestMatchers(HttpMethod.DELETE, "/api/trips/*").authenticated()
-            .anyRequest().authenticated()            // ❌ ที่เหลือต้องมี token
+            .requestMatchers(HttpMethod.PUT, "/api/trips/**").authenticated()  // ✅ PUT ทุก path
+            .requestMatchers(HttpMethod.DELETE, "/api/trips/**").authenticated()  // ✅ DELETE ทุก path
+            .anyRequest().authenticated()
         )
         .httpBasic(httpBasic -> httpBasic.disable())
         .sessionManagement(session -> session.sessionCreationPolicy(
