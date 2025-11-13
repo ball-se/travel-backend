@@ -3,6 +3,10 @@ package com.techup.travel.entity;
 import jakarta.persistence.*;
 import java.time.Instant;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+import java.util.List;
 
 @Entity
 @Builder
@@ -11,7 +15,7 @@ import lombok.*;
 @AllArgsConstructor
 @Table(name="trips")
 
-public class Trips {
+public class Trip {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -22,11 +26,13 @@ public class Trips {
     @Column(name="description", length = 1000)
     private String description;
     
-    @Column(name="photos", nullable = false)
-    private String photos;
-
-    @Column(name="tags", nullable = false)
-    private String tags;
+    @Column(name = "photos", nullable = false, columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
+    private List<String> photos;
+ 
+    @Column(name = "tags", nullable = false, columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
+    private List<String> tags;
 
     @Column(name="latitude", nullable = false)
     private Double latitude;
@@ -36,7 +42,7 @@ public class Trips {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "author_id", nullable = false)
-    private Users author;
+    private User author;
 
     @Builder.Default
     @Column(name="created_at", nullable = false, updatable = false)
