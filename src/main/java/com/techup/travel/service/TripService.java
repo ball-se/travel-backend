@@ -72,11 +72,15 @@ public class TripService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only update your own trips");
         }
         
-        // อัปเดตข้อมูล
+        // อัปเดตข้อมูล (ถ้า photos/tags เป็น null ให้เก็บของเดิมไว้)
         trip.setTitle(request.getTitle());
         trip.setDescription(request.getDescription());
-        trip.setPhotos(request.getPhotos());
-        trip.setTags(request.getTags());
+        if (request.getPhotos() != null) {
+            trip.setPhotos(request.getPhotos());
+        }
+        if (request.getTags() != null) {
+            trip.setTags(request.getTags());
+        }
         trip.setLatitude(request.getLatitude());
         trip.setLongitude(request.getLongitude());
         
@@ -118,9 +122,16 @@ public class TripService {
     }
 
     public TripResponse attachFileUrl(Long id, String url) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = authService.findByEmailOrThrow(email);
+
         Trip trip = tripRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Trip not found"));
-  
+
+        if (!trip.getAuthor().getId().equals(currentUser.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only upload to your own trips");
+        }
+
         List<String> photos = new ArrayList<>(trip.getPhotos() != null ? trip.getPhotos() : new ArrayList<>());
         photos.add(url);
         trip.setPhotos(photos);
