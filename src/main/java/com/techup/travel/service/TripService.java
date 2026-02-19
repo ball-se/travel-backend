@@ -106,8 +106,8 @@ public class TripService {
         Trip trip = Trip.builder()
                 .title(request.getTitle())
                 .description(request.getDescription())
-                .photos(request.getPhotos())
-                .tags(request.getTags())
+                .photos(request.getPhotos() != null ? request.getPhotos() : new ArrayList<>())
+                .tags(request.getTags() != null ? request.getTags() : new ArrayList<>())
                 .latitude(request.getLatitude())
                 .longitude(request.getLongitude())
                 .author(author)
@@ -121,7 +121,7 @@ public class TripService {
         Trip trip = tripRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Trip not found"));
   
-        List<String> photos = new ArrayList<>(trip.getPhotos());
+        List<String> photos = new ArrayList<>(trip.getPhotos() != null ? trip.getPhotos() : new ArrayList<>());
         photos.add(url);
         trip.setPhotos(photos);
   

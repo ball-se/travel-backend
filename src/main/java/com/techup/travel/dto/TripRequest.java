@@ -10,7 +10,6 @@ import java.util.List;
 
 /**
  * DTO รับข้อมูลเวลาสร้าง/แก้ไขทริป
- * - ใส่ Validation เพื่อป้องกัน input ไม่ครบหรือเกินขนาดที่กำหนด
  */
 @Data
 public class TripRequest {
@@ -22,12 +21,9 @@ public class TripRequest {
     @Size(max = 1_000, message = "description ต้องไม่เกิน 1,000 ตัวอักษร")
     private String description;
 
-    @NotBlank(message = "photos ห้ามว่าง")
-    @Size(max = 10_000, message = "photos ต้องไม่เกิน 10,000 ตัวอักษร")
+    // photos และ tags เป็น optional — รูปถูก upload แยกผ่าน /upload endpoint
     private List<String> photos;
 
-    @NotBlank(message = "tags ห้ามว่าง")
-    @Size(max = 1_000, message = "tags ต้องไม่เกิน 1,000 ตัวอักษร")
     private List<String> tags;
 
     @NotNull(message = "latitude ห้ามว่าง")
